@@ -1,16 +1,18 @@
 {
-    "name": "coopteh/crud-project",
-    "description": "MVC CRUD project with PDO",
-    "type": "project",
+    "name": "student/crud",
     "autoload": {
         "psr-4": {
-            "Crud\\": "src/"
+            "App\\": "src/"
         }
     },
+    "authors": [
+        {
+            "name": "Heslem",
+            "email": "moscvicin1986@gmail.com"
+        }
+    ],
     "require": {
-        "php": ">=7.4"
-    },
-    "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.94"
+        "php": ">=7.4",
+        "ext-pdo": "*"
     }
 }

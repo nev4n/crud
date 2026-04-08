@@ -1,28 +1,59 @@
 <?php
 
-// Подключение автозагрузчика Composer
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/src/database.php';
+require_once __DIR__ . '/src/Models/Record.php';
+require_once __DIR__ . '/src/Controllers/RecordController.php';
+require_once __DIR__ . '/src/Views/RecordView.php';
 
-use Crud\Controllers\RecordController;
+$controller = new RecordController();
+$view = new RecordView();
 
-// Настройка соединения с БД через PDO [[14]]
-$dsn = 'mysql:host=localhost;dbname=example1;charset=utf8mb4';
-$username = 'root';
-$password = ''; // По умолчанию в XAMPP пароль пустой
+$action = $_GET['action'] ?? 'index';
+$page = (int)($_GET['page'] ?? 1);
 
-$options = [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
+switch ($action) {
+    case 'index':
+    default:
+        $records = $controller->paginate($page);
+        $totalPages = $controller->totalPages();
+        echo $view->list($records, $page, $totalPages);
+        break;
 
-try {
-    $pdo = new PDO($dsn, $username, $password, $options);
+    case 'insert':
+        echo $view->form();
+        break;
 
-    // Обработка GET-запроса
-    $controller = new RecordController($pdo);
-    $controller->index();
+    case 'create':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $controller->insert($_POST);
+            header('Location: ?action=index');
+            exit;
+        }
+        break;
 
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo 'Ошибка подключения к БД: ' . htmlspecialchars($e->getMessage());
+    case 'edit':
+        $id = (int)($_GET['id'] ?? 0);
+        echo $view->form($controller->show($id));
+        break;
+
+    case 'update':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)($_GET['id'] ?? 0);
+            $controller->update($id, $_POST);
+            header('Location: ?action=index');
+            exit;
+        }
+        break;
+
+    case 'delete':
+        $id = (int)($_GET['id'] ?? 0);
+        $controller->delete($id);
+        header('Location: ?action=index');
+        exit;
+
+    case 'restore':
+        $id = (int)($_GET['id'] ?? 0);
+        $controller->restore($id);
+        header('Location: ?action=index');
+        exit;
 }

@@ -1,5 +1,2 @@
-/crud/
-
-vendor/
-*.log
-.DS_Store
+vendor
+/vendor/

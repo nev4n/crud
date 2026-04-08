@@ -1,27 +1,56 @@
 <?php
 
-namespace Crud\Controllers;
-
-use Crud\Models\Record;
-use Crud\Views\RecordView;
-use PDO;
-
 class RecordController
 {
-    private PDO $pdo;
+    private const PER_PAGE = 10;
 
-    public function __construct(PDO $pdo)
+    public function index(): array
     {
-        $this->pdo = $pdo;
+        return Record::allWithDeleted();
     }
 
-    public function index(): void
+    public function paginate(int $page = 1): array
     {
-        // GET-запрос: получить данные и отобразить
-        $model = new Record($this->pdo);
-        $records = $model->getAll();
+        return Record::paginate($page, self::PER_PAGE);
+    }
 
-        $view = new RecordView();
-        echo $view->render($records);
+    public function totalPages(): int
+    {
+        return (int)ceil(Record::count() / self::PER_PAGE);
+    }
+
+    public function show(int $id): ?Record
+    {
+        return Record::find($id);
+    }
+
+    public function insert(array $data): Record
+    {
+        $record = new Record();
+        $record->name = $data['name'];
+        $record->save();
+        return $record;
+    }
+
+    public function update(int $id, array $data): ?Record
+    {
+        $record = Record::findWithDeleted($id);
+        if (!$record) return null;
+
+        $record->name = $data['name'] ?? $record->name;
+        $record->save();
+        return $record;
+    }
+
+    public function delete(int $id): bool
+    {
+        $record = Record::findWithDeleted($id);
+        return $record ? $record->delete() : false;
+    }
+
+    public function restore(int $id): bool
+    {
+        $record = Record::findWithDeleted($id);
+        return $record ? $record->restore() : false;
     }
 }
